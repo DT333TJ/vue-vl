@@ -2,8 +2,8 @@
  * @Desc: 主题目录组件
  */
 <template>
-  <div class="topic-title-page fill-width">
-    {{parentKind}} - {{childKind}} <span style="font-size: 14px">（{{totalCount}}）</span>
+  <div class="topic-title-page fill-width vertical-center">
+    {{parentKind}} <Icon type="chevron-right" size="20" style="margin: 0 10px"></Icon> {{childKind}} <span class="topic-total">（{{totalCount}}）</span>
   </div>
 </template>
 
@@ -13,15 +13,18 @@
     props: {
       parentKind: {
         type: String,
+        default: '',
         required: true
       },
       childKind: {
         type: String,
+        default: '',
         required: true
       },
       totalCount: {
         type: [String, Number],
-        required: true
+        required: true,
+        default: 0
       }
     }
   }
@@ -32,9 +35,17 @@
   @import '~style/variable'
 
   .topic-title-page
-    margin-top 30px
+    margin 45px 0
     height 40px
     line-height 40px
-    font-size 30px
-    font-weight bold
+    font-size 40px
+    vertical-align middle
+    .topic-total
+      font-size 24px
+  @media screen and (max-width 1600px) 
+    .topic-title-page
+      font-size 36px
+      margin 40px 0
+      .topic-total
+        font-size 18px 
 </style>

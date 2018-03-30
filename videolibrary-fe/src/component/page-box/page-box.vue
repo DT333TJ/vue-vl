@@ -16,5 +16,5 @@
 <style scoped lang="stylus" rel="stylesheet/stylus">
   .page-box-page
     margin 0 auto
-    padding 60px 0 0 0
+    padding 20px 0 0 0
 </style>

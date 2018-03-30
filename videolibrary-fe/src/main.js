@@ -3,25 +3,27 @@
 import 'babel-polyfill'
 import Vue from 'vue'
 import App from './App'
+import store from 'store'
 import router from 'router'
 import 'router/filter'
 import iView from 'iview'
-import VueAwesomeSwiper from 'vue-awesome-swiper'
-
+import 'filter'
 import 'iview/dist/styles/iview.css'
-import 'swiper/dist/css/swiper.css'
-
 import 'component'
 import 'style/index.styl'
 
-Vue.config.productionTip = false
+// 引入video.js文件
+import 'lib/video.js'
 
+
+Vue.config.productionTip = false
 Vue.use(iView)
-Vue.use(VueAwesomeSwiper)
+
 
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
   router,
+  store,
   render: h => h(App)
 })

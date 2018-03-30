@@ -4,8 +4,11 @@
 <template>
   <div class="slick-slide-page">
     <!-- 头部标题 -->
-    <div class="slide-title" v-text="slickObj.type ? slickObj.type : '标题名称'"></div>
-
+    <div class="slide-title" >
+      <img src="../../image/list-bg.png" alt="">
+      <div class="slide-titleText" v-text="slickObj.parentType ? slickObj.parentType : '标题名称'"></div>
+    </div>
+   
     <!-- 显示容器 -->
     <div class="slide-box">
       <div class="slide-list-box" ref="slideListBox">
@@ -16,22 +19,20 @@
     </div>
 
     <!-- 左侧控制按钮 -->
-    <div class="slide-control-left vertical-center" v-if="leftButtonFlag">
+    <div class="slide-control-left vertical-center clickable" v-if="leftButtonFlag" @click="_slideLeftButtonClick">
       <Icon 
         type="chevron-left" 
-        size="30" 
-        class="center clickable icon-transition slide-left-btn" 
-        @click.native="_slideLeftButtonClick">
+        size="25" 
+        class="center clickable icon-transition slide-left-btn">
       </Icon>
     </div>
 
     <!-- 右侧控制按钮 -->
-    <div class="slide-control-right vertical-center" v-if="rightButtonFlag">
+    <div class="slide-control-right vertical-center clickable" v-if="rightButtonFlag" @click="_slideRightButtonClick">
       <Icon 
         type="chevron-right" 
-        size="30" 
-        class="center clickable icon-transition slide-right-btn" 
-        @click.native="_slideRightButtonClick">
+        size="25" 
+        class="center clickable icon-transition slide-right-btn">
       </Icon>
     </div>
   </div>
@@ -65,13 +66,10 @@
         return this.$parent.$el.clientWidth
       },
       contentWidth: function() {
-        return Number(this.$refs.slideListBox.getElementsByClassName('slide-item-box')[0].clientWidth) * Number(this.$refs.slideListBox.getElementsByClassName('slide-item-box').length)
+        return Number(this.$parent.$el.clientWidth) * Math.ceil((this.slickObj.resources.length)/6)
       }
     },
     watch: {
-     
-    },
-    created: function() {
 
     },
     mounted: function() {
@@ -82,7 +80,7 @@
        * 根据prop传递的数据来设置左右按钮的显示与否
       */
       _buttonVisibleFlag: function() {
-        this.rightButtonFlag = this.slickObj.resources.length > 6 ? true : false
+        this.rightButtonFlag = this.slickObj.resources.length > 6
       },
 
       /** 
@@ -117,7 +115,7 @@
         distance = distance + (-translateValue)
         this.$refs.slideListBox.style.transform = `translate3d(${-distance}px, 0px, 0px)`
         // 根据总体的偏移距离来控制按钮的显示
-        this.rightButtonFlag = ( Math.abs(2*distance) > contentWidth ) ? false : true
+        this.rightButtonFlag = ( Math.abs(distance) + this.boxWidth === contentWidth ) ? false : true
         this.leftButtonFlag = true
       },
 
@@ -126,15 +124,13 @@
       */
       _getCurrentDistance: function() {
         // 获取当前的偏移距离
-        let currentDistance
+        let currentDistance = 0
         // 根据获取到的属性值来获取偏移距离
         if(this.$refs.slideListBox.style.transform != '') {
           let startIndex = this.$refs.slideListBox.style.transform.indexOf('(') + 1
           let endIndex = this.$refs.slideListBox.style.transform.indexOf('px')
           currentDistance = Number( this.$refs.slideListBox.style.transform.substring(startIndex, endIndex))
-        } else {
-          currentDistance = 0
-        }
+        } 
         return currentDistance
       },
 
@@ -145,7 +141,7 @@
       _videoItemClick: function(item) {
         if (item.resourceId) {
           let resourceId = item.resourceId
-          window.open(window.location.origin + `/#/video-detail?resourceId=${resourceId}`)
+          window.open(window.location.origin + `/#/video-detail?resourceId=${resourceId}&chapterId=${this.slickObj.chapterId}`)
         }
       }
     }
@@ -164,24 +160,30 @@
     /* 标题 */
     .slide-title
       position absolute
-      left -10px
-      top -10px
+      left -16px
+      top -12px
       z-index 99
       display inline-block
-      padding 0 20px
-      background-color red
+      font-size 16px
       color $color-text-w
-
+    /*标题内容*/
+    .slide-titleText
+      position absolute
+      left 22px
+      top 6px
+      text-shadow 1px 1px 3px rgba(0, 0, 0, .5)
     /* 左侧控制按钮 */
     .slide-control-left
       position absolute
       left -30px
       top 0
       bottom 0
-      width 30px
+      width 25px
+      background-color $color-background
+      &:hover
+        background-color #eeeeee
       .slide-left-btn
-        &:hover
-          font-size 40px !important
+        color #bebebe
       .icon-transition
         transition all .2s ease-in-out    
 
@@ -191,10 +193,12 @@
       right -30px
       top 0
       bottom 0 
-      width 30px
+      width 25px
+      background-color $color-background
+      &:hover
+        background-color #eeeeee
       .slide-right-btn
-        &:hover
-          font-size 40px !important
+        color #bebebe
       .icon-transition
         transition all .2s ease-in-out
 
@@ -214,11 +218,13 @@
         .slide-item-box
           flex-grow 0
           flex-shrink 0
-          width 250px
-          height 180px
-          padding 0 5px
+          width 240px
+          height 200px
+          margin-right 20px
+          &:nth-child(6n+0)
+            margin-right 0px 
         @media screen and (max-width 1600px) 
           .slide-item-box
-            width 200px
-            height 160px  
+            width 160px
+            height 136px 
 </style>

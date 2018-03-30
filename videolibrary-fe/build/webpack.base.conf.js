@@ -35,7 +35,8 @@ module.exports = {
       'style': resolve('src/style'),
       'base': resolve('src/base'),
       'store': resolve('src/store'),
-      'image': resolve('src/image')
+      'image': resolve('src/image'),
+      'filter': resolve('src/filter')
     }
   },
   module: {

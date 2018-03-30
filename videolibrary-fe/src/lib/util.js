@@ -47,16 +47,17 @@ export function validataPhone(value) {
   }
 }
 
+// 验证帐号(6~32位字符)
+export function validateAccouts(value) {
+  let pattern = /^.{6,32}$/
+  return Boolean(value.match(pattern))
+}
+
+
 // 验证密码(6~32位字符)
 export function validatePassword(value) {
   let pattern = /^.{6,32}$/
-  if (null == value || value == '') {
-    return false
-  } else if ( !value.match(pattern)) {
-    return false
-  } else {
-    return true
-  }
+  return Boolean(value.match(pattern))
 }
 
 // 核对两次密码一致否

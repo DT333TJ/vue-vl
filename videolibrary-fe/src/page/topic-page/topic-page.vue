@@ -6,20 +6,21 @@
     <!-- 公共头部 -->
     <v-header></v-header>
     <!-- 居中内容容器 -->
-    <page-box>
+    <page-box style="margin-top: 60px">
       <!-- 标题组件 -->
-      <topic-title :parentKind="topicData.parentKind" :childKind="topicData.childKind" :totalCount="topicData.totalCount"></topic-title>
+      <topic-title :parentKind="topicData.parentTitle" :childKind="topicData.childTitle" :totalCount="topicData.totalCount"></topic-title>
 
       <!-- 数据列表 -->
-      <div class="topic-data-box fill-width">
-        <li class="data-list" v-for="n in 30" :key="n">
-          <div class="fill" style="background-color: pink"></div>
+      <div class="topic-data-box fill-width clear-float">
+        <li class="data-list float-left" v-for="(videoItem, index) in topicData.resources" v-if="videoItem" :key="index">
+          <video-item :videoItem="videoItem" @click.native="_videoItemClick(videoItem)"></video-item>
         </li>
       </div>
 
       <!-- 分页数据 -->
-      <Page 
-        :total="queryParam.total" 
+      <Page
+        v-show="pageVisible" 
+        :total="pageTotal" 
         :current="queryParam.pageNum" 
         :page-size="queryParam.pageSize"
         @on-change="_pageNumChange" 
@@ -32,53 +33,39 @@
 </template>
 
 <script type="text/ecmascript-6">
+  import { sessionStorageUtil } from 'lib/util'
   import PageBox from 'component/page-box'
   import TopicTitle from 'component/topic-title'
+  import VideoItem from 'component/video-item'
+  import { requestGetTopicData } from 'api/topic-page'
 
   export default {
     name: 'topic-page',
     components: {
       PageBox,
-      TopicTitle
-    },
-    props: {
-
+      TopicTitle,
+      VideoItem
     },
     data: function() {
       return {
         // 主题数据
-        topicData: {
-          "parentKind":"生命科学",
-          "childKind":"动物",
-          "pageSize":10,
-          "pageNum":1,
-          "totalCount":30,
-          "resources":[
-            {
-              "resourceId":1,
-              "coverUrl":"xxx/xxx/xxx",
-              "duration":500,
-              "title":"蓝色星球"
-            },
-            {
-              "resourceId":2,
-              "coverUrl":"xxx/xxx/xxx",
-              "duration":600,
-              "title":"幽黯深海"
-            }
-          ]
-        },
+        topicData: {},
 
         // 请求参数对象（包括分页）
         queryParam: {
+          typeId: 0,
           pageNum: 1,
-          total: 40,
-          pageSize: 30,
-        }
-      }
-    },
-    computed: {
+          pageSize: 36,
+        },
 
+        // 传递的chapterId
+        chapterId: 0,
+
+        // 分页总数
+        pageTotal: 0,
+        // 分页显示标识
+        pageVisible: false
+      }
     },
     watch: {
       // 如果路由有变化，会再次执行该方法
@@ -87,7 +74,6 @@
       queryParam: {
         deep: true,
         handler(newValue) {
-          console.log('变化值:', newValue)
           this._requestGetTopicResult()
         }
       }
@@ -95,18 +81,31 @@
     mounted: function() {
       this._getQueryValue()
     },
+    beforeRouteUpdate (to, from, next) {
+      // 在当前路由改变，但是该组件被复用时调用
+      // 举例来说，对于一个带有动态参数的路径 /foo/:id，在 /foo/1 和 /foo/2 之间跳转的时候，
+      // 由于会渲染同样的 Foo 组件，因此组件实例会被复用。而这个钩子就会在这个情况下被调用。
+      sessionStorageUtil.get('topic-pageNum') && sessionStorageUtil.set('topic-pageNum', '1')
+      next()
+    },
+    beforeRouteLeave (to, from, next) {
+      // 导航离开该组件的对应路由时调用
+      sessionStorageUtil.get('topic-pageNum') && sessionStorageUtil.set('topic-pageNum', '1')
+      next()
+    },
     methods: {
       /** 
        * 获取当前页面的路由数据
       */
       _getQueryValue: function() {
         let query = this.$route.query
-
-        if (query.id != -1) {
-          this.topicData.parentKind = '人文科学'
-          this.topicData.childKind = '历史'
-          this.topicData.totalCount = 100
+        this.queryParam = {
+          pageNum: sessionStorageUtil.get('topic-pageNum') ? Number(sessionStorageUtil.get('topic-pageNum')) : 1,
+          pageSize: 36,
+          typeId: Number(query.id)
         }
+        // 确保回到顶部
+        document.documentElement.scrollTop = document.body.scrollTop = 0
       },
 
       /** 
@@ -114,13 +113,42 @@
       */
       _pageNumChange: function(val) {
         this.queryParam.pageNum = val
+        sessionStorageUtil.set('topic-pageNum', val)
+        document.documentElement.scrollTop = document.body.scrollTop = 0
       },
 
       /** 
        * 请求参数改变调用api方法事件
       */
       _requestGetTopicResult: function() {
+        let param = {
+          typeId: this.queryParam.typeId,
+          pageNum: this.queryParam.pageNum,
+          pageSize: this.queryParam.pageSize
+        }
+        // 后台api调用
+        requestGetTopicData(param).then( response => {
+          // console.log('requestGetTopicData:', response.data)
+          if (response.code === 0 && response.data) {
+            this.topicData = response.data
+            this.pageTotal = response.data.totalCount
+            this.chapterId = response.data.parentId
+            document.title = response.data.childTitle
+            // 根据总数进行分页显示的判断
+            this.pageVisible = response.data.totalCount > response.data.pageSize 
+          }
+        })
+      },
 
+      /** 
+       * 视频item点击
+       * @param {Object} item: 点击的视频对象数据信息
+      */
+      _videoItemClick: function(item) {
+        if (item.resourceId) {
+          let resourceId = item.resourceId
+          window.open(window.location.origin + `/#/video-detail?resourceId=${resourceId}&chapterId=${this.chapterId}`)
+        }
       }
     }
   }
@@ -132,20 +160,23 @@
 
   .topic-page
     position relative
+    overflow-y auto
     .topic-data-box
-      display flex
-      flex-flow row wrap
-      padding 20px 0
+      padding-bottom 12px
+      min-height 660px
+    @media screen and (max-width 1600px)
+      .topic-data-box
+        min-height 460px
+
+    .topic-data-box
       .data-list
-        flex-grow 0
-        flex-shrink 0
-        width 250px
-        height 180px
-        padding 0 5px
-        margin 20px 0
+        width 240px
+        height 200px
+        margin-bottom 20px
+        margin-right 16px
+        box-shadow 0px 0px 3px rgba(0, 0, 0, .3)
       @media screen and (max-width 1600px) 
         .data-list
-          width 200px
-          height 160px  
-
+          width 160px
+          height 136px  
 </style>

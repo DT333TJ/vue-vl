@@ -4,47 +4,75 @@
 <template>
   <div class="video-item-page fill clickable">
     <!-- 照片容器 -->
-    <div class="img-box fill-width">
-      <span class="video-time">05:30</span>
-      <img class="fill" src="../../image/demo.jpg" alt="">
+    <div class="img-box fill-width" @mouseenter="_deleteBtnShow" @mouseleave="_deleteBtnHide">
+      <div 
+        v-show="deleteFlag && btnFlag" 
+        class="collect-delete-btn vertical-center clickable" 
+        @click.stop="$emit('deleteCollect', videoItem.resourceId)">
+        <Icon type="trash-a" class="delete-icon"></Icon>
+      </div>
+      <span class="video-time" v-show="videoItem.duration && iconFlag">{{videoItem.duration | tranformTime }}</span>
+      <img class="fill" :src="oriUrl + `/images/${videoItem.resourceId}/${videoItem.coverUrl}`">
+      <div class="video-gradient"></div>
     </div>
 
     <!-- 文字容器 -->
-    <div class="text-box" :title="videoItem.title" v-text="videoItem.title ? videoItem.title : '资源名称'"></div>
+    <div class="text-box" :title="videoItem.title" v-if="videoItem.title">{{ videoItem.title | textLength }}</div>
+    <div class="text-box" :title="videoItem.title" v-else>资源名称</div> 
   </div>
 </template>
 
 <script type="text/ecmascript-6">
+  import { originUrl } from 'config/constant'
+
   export default {
     name: 'video-item',
+    data: function() {
+      return {
+        // host路径
+        origin: originUrl,
+
+        // 图标文字显示
+        iconFlag: true,
+        btnFlag: false
+      }
+    },
     props: {
       videoItem: {
         type: Object,
         default: {}
-      }
-    },
-    data: function() {
-      return {
-
+      },
+      deleteFlag: {
+        type: Boolean,
+        default: false
       }
     },
     computed: {
-
-    },
-    watch: {
-
-    },
-    created: function() {
-
-    },
-    mounted: function() {
-
-    },
-    destoryed: function() {
-
+      oriUrl: function() {
+        // host路径
+        return this.origin === 'http://localhost:7001' ? 'http://videolib.viewshare.net' : this.origin
+      }
     },
     methods: {
+      /** 
+       * 鼠标移入事件
+      */
+      _deleteBtnShow: function() {
+        if (this.deleteFlag) {
+          this.iconFlag = false
+          this.btnFlag = true
+        }
+      },
 
+      /** 
+       * 鼠标移出事件
+      */
+      _deleteBtnHide: function() {
+        if (this.deleteFlag) {
+          this.iconFlag = true
+          this.btnFlag = false
+        }
+      }
     }
   }
 </script>
@@ -54,26 +82,68 @@
   @import '~style/variable'
 
   .video-item-page
-    position relative
-    height 100%
+    box-sizing content-box
+    border 1px solid #ebebeb
+    height 99%
     .img-box
       position relative
-      height 75%
+      height 135px
+      .collect-delete-btn
+        position absolute
+        top 105px
+        right 10px
+        width 30px
+        height 30px
+        line-height 30px
+        display block
+        z-index 9
+        text-align center
+        .delete-icon
+          color white
+          font-size 18px
+          &:hover
+            color #cb8919
+      @media screen and (max-width 1600px)
+        .collect-delete-btn
+          top 60px
+          right 2px
+          .delete-icon
+            font-size 14px 
+
       .video-time
         position absolute
         display inline-block
         padding 5px 10px
         right 0
         bottom 0
+        z-index 9
+        color #fff
+    
+      /*video中背景渐变*/    
+      .video-gradient
+        position absolute
+        bottom 0
+        width 100%
+        height 25%
+        background-color rgba(0, 0, 0, .2)
+      @media screen and (max-width 1600px)
+        .video-gradient
+          height 35%
 
     .text-box
       display -webkit-box
-      height 25%
-      padding 0 5px
-      font-size 14px
-      word-break break-all
-      text-overflow ellipsis
-      -webkit-box-orient vertical /** 设置或检索伸缩盒对象的子元素的排列方式 **/
-      -webkit-line-clamp 2 /** 显示的行数 **/
-      overflow hidden  /** 隐藏超出的内容 **/
+      height 65px
+      padding 10px 15px
+      font-size 16px
+      overflow hidden
+      &:hover
+        color #cb8919
+    @media screen and (max-width 1600px) 
+      .img-box 
+        height 90px
+      .text-box
+        font-size 12px
+        padding 4px 10px   
+        height 45px
+    
 </style>

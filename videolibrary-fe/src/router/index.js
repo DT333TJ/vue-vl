@@ -31,14 +31,14 @@ const SearchPage = r => require.ensure([], () => r(require('page/search-page')),
 const routers = [
   {
     path: '/',
-    redirect: '/home-page'
+    redirect: '/login'
   },
   {
     path: '/login',
     name: 'login',
     component: Login,
     meta: {
-      title: '登录'
+      title: '互动视频图书馆'
     }
   },
   {
@@ -46,7 +46,7 @@ const routers = [
     name: 'home-page',
     component: HomePage,
     meta: {
-      title: '首页',
+      title: '互动视频图书馆',
       requireAuth: true
     }
   },
@@ -55,7 +55,7 @@ const routers = [
     name: 'topic-page',
     component: TopicPage,
     meta: {
-      title: '主题',
+      title: '互动视频图书馆',
       requireAuth: true
     }
   },  
@@ -64,7 +64,7 @@ const routers = [
     name: 'video-detail',
     component: VideoDetail,
     meta: {
-      title: '视频详情',
+      title: '互动视频图书馆',
       requireAuth: true
     }
   },
@@ -94,6 +94,10 @@ const routers = [
       title: '搜索',
       requireAuth: true
     }
+  },
+  {
+    path: '*',
+    redirect: '/login'
   }
 ]
 

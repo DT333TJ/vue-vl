@@ -2,123 +2,95 @@
  * @Desc: 公共头部
  */
 <template>
-  <div class="header-page clear-float" :class="{'pos-fixed': scrollFlag}">
-    <!-- logo -->
-    <router-link to="/home-page" class="float-left">logo</router-link>
+  <div 
+    class="header-page fill-width"
+    :style="{'height': screenChange ? '80px' : '70px', 'lineHeight': screenChange ? '80px' : '70px'}" 
+    :class="{'pos-fixed': scrollFlag || !isFixed, 'header-border-bottom': scrollFlag || !isFixed }">
+    <page-box style="padding: 0;position: relative" class="clear-float">
+      <!-- logo -->
+      <router-link to="/home-page" class="float-left home-logo" :style="{'height': screenChange ? '80px' : '70px'}" >
+        <img src="../../image/logo2.png" v-if="scrollFlag || !isFixed" class="fill-height">
+        <img src="../../image/logo1.png" v-else class="fill-height">
+      </router-link>
 
-    <!-- nav -->
-    <nav class="nav-box clear-float" :class="[searchFlag ? 'nav-box-hide' : '']">
-      <!-- nav标题 -->
-      <nav-item 
-        v-for="(list, index) in navData" 
-        :key="index"
-        :navText="list.title" 
-        :navList="list.list">
-      </nav-item>
+      <!-- nav -->
+      <nav class="nav-box clear-float" :class="[searchFlag ? 'nav-box-hide' : '']">
+        <!-- nav标题 -->
+        <nav-item
+          v-if="$store.state.navList" 
+          v-for="(list, index) in $store.state.navList" 
+          :key="index"
+          :navText="list.title" 
+          :navList="list.types"
+          :topValue="screenChange ? 80 : 70"
+          :colorChange="scrollFlag || !isFixed">
+        </nav-item>
 
-      <!-- 头像数据 -->
-      <header-avatar></header-avatar>
+        <!-- 头像数据 -->
+        <header-avatar></header-avatar>
 
-      <!-- 搜索按钮 -->
-      <div class="btn-box float-left clickable" @click="_serachFlagClick">
-        <Icon type="search" size="30" color="#ffffff"></Icon>
+        <!-- 搜索按钮 -->
+        <div class="btn-box float-left clickable vertical-center" @click="_serachFlagClick">
+          <Icon type="search" size="24" color="#ffffff" style="margin-left: 11px" ></Icon>
+        </div>
+      </nav>
+
+      <!-- 搜索框  -->
+      <div 
+        class="search-box vertical-center"
+        :style="{'marginTop' : screenChange ? '20px' : '15px'}" 
+        :class="[searchFlag ? 'search-box-show': 'search-box-hide' , scrollFlag || !isFixed ? 'inputBorder' : '']">
+        <!-- input输入框 -->
+        <input
+          ref="hiddenInput" 
+          type="text" 
+          class="search-input" 
+          placeholder="输入关键字"
+          v-model="searchValue" 
+          @keyup.enter="_searchButtonClick">
+        <!-- 搜索按钮  -->
+        <Icon 
+          type="android-search"
+          @click.native="_searchButtonClick"
+          style="margin-right: 8px;cursor: pointer;color:#a1c205"
+          size="30">
+        </Icon>
+        <!-- 关闭按钮 -->
+        <Icon 
+          type="android-close" 
+          size="30"
+          style="cursor: pointer;color:#a1c205" 
+          @click.native="searchFlag = false">
+        </Icon>
       </div>
-    </nav>
-
-    <!-- 搜索框  -->
-    <div class="search-box vertical-center" :class="[searchFlag ? 'search-box-show': 'search-box-hide']">
-      <!-- input输入框 -->
-      <input 
-        type="text" 
-        class="search-input" 
-        placeholder="输入关键字" 
-        v-model="searchValue" 
-        @keyup.enter="_searchButtonClick">
-      <!-- 搜索按钮 -->
-      <Icon 
-        type="search" 
-        size="35" 
-        style="cursor: pointer;margin-right: 20px" 
-        @click.native="_searchButtonClick">
-      </Icon>
-      <!-- 关闭按钮 -->
-      <Icon 
-        type="android-close" 
-        size="35" 
-        style="cursor: pointer" 
-        @click.native="_closeFlagClick">
-      </Icon>
-    </div>
+    </page-box>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
   import NavItem from 'component/nav-item'
   import HeaderAvatar from 'component/header-avatar'
+  import PageBox from 'component/page-box'
 
   export default {
     name: 'VHeader',
     components: {
       NavItem,
-      HeaderAvatar
+      HeaderAvatar,
+      PageBox
     },
     props: {
-
+      isFixed: {
+        type: Boolean,
+        default: false
+      }
     },
     data: function() {
       return {
-        // 导航数据
-        navData: [
-          {
-            'title': '生命科学',
-            'list': [
-              {'id': -1, 'title': '动物'},
-              {'id': 0, 'title': '植物'}
-            ]
-          },
-          {
-            'title': '地球科学',
-            'list': [
-              {'id': 1, 'title': '地球1'},
-              {'id': 2, 'title': '地球2'}
-            ]
-          },
-          {
-            'title': '物质科学',
-            'list': [
-              {'id': 3, 'title': '物质1'},
-              {'id': 4, 'title': '物质2'}
-            ]
-          },
-          {
-            'title': '社会人文',
-            'list': [
-              {'id': 5, 'title': '人文1'},
-              {'id': 6, 'title': '人文2'}
-            ]
-          },
-          {
-            'title': '医学健康',
-            'list': [
-              {'id': 7, 'title': '医学健康1'},
-              {'id': 8, 'title': '医学健康2'}
-            ]
-          },
-          {
-            'title': '工程技术',
-            'list': [
-              {'id': 9, 'title': '工程技术1'},
-              {'id': 10, 'title': '工程技术2'}
-            ]
-          },
-          {
-            'title': '其他',
-            'list': [
-              {'id': 11, 'title': '其他1'},
-              {'id': 12, 'title': '其他2'}
-            ]
-          }
-        ],
+        visible: false,
+        //屏幕大小的判断
+        screenWidth: document.body.clientWidth,
+        screenChange: true,
 
         // 搜索文本值
         searchValue: '',
@@ -126,34 +98,57 @@
         searchFlag: false,
 
         // 滚动标识
-        scrollFlag: false 
+        scrollFlag: false,
+        //滚动之后的颜色标识符
+        colorChange: "",
       }
     },
-    computed: {
-     
-    },
-    watch: {
-      
-    },
     mounted() {
-      window.addEventListener('scroll', this._scrollEvent)
+      // 根据isFixed的属性值来进行时间绑定和样式变化
+      this._propsEvent()
+      //绑定屏幕缩放事件
+      window.addEventListener('resize', this._resizeEvent)
+    },
+    destoryed: function() {
+      // 解除绑定事件
+      window.removeEventListener('scroll', this._scrollEvent)
+      window.removeEventListener('resize', this._resizeEvent)
     },
     methods: {
+      /** 
+       * 根据传递的属性值来进行操作
+      */
+      _propsEvent: function() {
+        if (this.isFixed) {
+          // 监听滚动事件
+          window.addEventListener('scroll', this._scrollEvent)
+        } 
+      },
+
       /** 
        * 监听屏幕滚动事件 
        */
       _scrollEvent: function() {
         let scrollValue = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
         let clientWidth = document.body.clientWidth
-        // console.log('宽度:', clientWidth)
-        this.scrollFlag = Number(scrollValue) >= 520 ? true : false
+        this.scrollFlag = Number(scrollValue) >= 620 ? true : false
       },
 
+      /** 
+       * 监听屏幕缩放事件
+      */
+      _resizeEvent: function() {
+        window.screenWidth = document.body.clientWidth
+        this.screenWidth = window.screenWidth
+        this.screenChange = this.screenWidth >= 1600 ? true : false
+      },
+      
       /** 
        * nav中的搜索图标点击，出现搜索输入框
       */
       _serachFlagClick: function() {
         this.searchFlag = true
+        this.$refs.hiddenInput.focus()
       },
 
       /** 
@@ -170,13 +165,6 @@
           this.searchValue = ''
           this.searchFlag = false
         }
-      },
-
-      /** 
-       * 搜索框中关闭按钮点击，关闭搜索输入框
-      */
-      _closeFlagClick: function() {
-        this.searchFlag = false
       }
     }
   }
@@ -187,28 +175,37 @@
   @import '~style/variable'
 
   .pos-fixed
-    position fixed !important  
+    position fixed !important
+    background #ffffff !important
+  .header-border-bottom
+    border-bottom 1px solid #e8e8e8  
   .header-page
     position absolute
     top 0
     left 0
-    right 0
     z-index 999
-    height 60px
-    background-color $color-background-sub
+    padding 0 16px
 
+    .home-logo
+      margin-left -100px
+   
     /* 导航容器 */
     .nav-box
       position absolute
-      right 0
+      top 0
+      right -100px
       height 100%
-      padding-right 40px 
-      line-height 60px
-      transition all .3s ease-in-out
+      line-height 80px
+      transition all .2s ease-in-out
       .btn-box
         height 100%
-        padding-top 8px
-        margin 0 10px
+        margin 20px 10px
+        width 40px
+        height 40px
+        line-height 40px
+        background #a1c205
+        border-radius 50%
+        text-align center
     /* 导航容器隐藏 */
     .nav-box-hide
       transform translateX(-385px)
@@ -220,30 +217,38 @@
       opacity 1
       pointer-events auto
 
-    
     /* 搜索容器显示 */  
     .search-box-show
-      width 385px
+      width 400px
       opacity 1
-      background-color $color-background 
+      background-color $color-background
     /* 搜索容器隐藏 */
     .search-box-hide
       width 0 
       opacity 0
     /* 搜索容器 */
     .search-box
+      float right 
       position absolute
-      right 0
-      height 100%
-      line-height 60px
-      transition all .3s ease-in-out
+      right -100px
+      height 40px
+      line-height 40px
+      transition all .2s ease-in-out
       overflow hidden
+      border-radius 30px
+      background-color rgba(255,255,255,.3)
       .search-input
-        width 300px
-        height 100%
-        padding 0 16px      
-      .search-btn
-        display inline-block
-        height 100%
-        line-height 60px         
+        width 340px
+        height 40px
+        padding 0 16px
+        color #cccccc
+        &::-webkit-input-placeholder
+          color #cccccc
+        &::-moz-placeholder
+          color #cccccc
+        &::-ms-input-placeholder
+          color #cccccc     
+    /*滚动之后搜索框的颜色*/   
+    .inputBorder
+      border 2px solid #a1c205
 </style>

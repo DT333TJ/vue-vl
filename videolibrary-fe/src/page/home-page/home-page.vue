@@ -4,8 +4,7 @@
 <template>
   <div class="home-page fill-width">
     <!-- 公共头部 -->
-    <v-header></v-header>
-
+    <v-header :isFixed="true"></v-header>
     <!-- 轮播图 -->
     <Carousel
       v-model="carouselValue"
@@ -18,12 +17,13 @@
       :arrow="setting.arrow">
       <CarouselItem v-for="(carouselItem, index) in carouselData" :key="index">
         <div 
-          @click="_detailButtonClick"
+          @click="_detailButtonClick(carouselItem.targetUrl)"
           @mouseenter.stop="_stopCarouselRun"
           @mouseleave.stop="_startCarouselRun"
-          :style="{backgroundImage: `url(${carouselItem.imageUrl})`, backgroundColor: carouselItem.bgColor}" 
+          :style="{backgroundImage: `url('${originUrl}/${carouselItem.master}')`, backgroundColor: `#${carouselItem.colour}`}"        
+          :title="carouselItem.title"
           class="carousel-item clickable fill">
-          <div class="carousel-shadow-bg fill" :style="{backgroundImage: `url(${carouselItem.bgUrl})`}"></div>
+          <div class="carousel-shadow-bg fill" :style="{backgroundImage: `url('${originUrl}/${carouselItem.borders}')`}"></div>
         </div>
       </CarouselItem>
     </Carousel>
@@ -39,8 +39,10 @@
 </template>
 
 <script type="text/ecmascript-6">
+  import { originUrl } from 'config/constant'
   import PageBox from 'component/page-box'
   import SlickSlide from 'component/slick-slide'
+  import { requestGetCarouselData, requestGetRecommendData } from 'api/home-page'
 
   export default {
     name: 'home-page',
@@ -50,149 +52,52 @@
     },
     data: function() {
       return {
-        data: [
-          {
-            "type":"生命科学",
-            "resources":[
-              {
-                "resourceId":1,
-                "coverUrl":"xxx/xxx/xxx",
-                "duration":500,
-                "title":"蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球"
-              },
-              {
-                "resourceId":2,
-                "coverUrl":"xxx/xxx/xxx",
-                "duration":600,
-                "title":"幽黯深海"
-              }
-            ]
-          },
-          {
-            "type":"地球科学",
-            "resources":[
-              {
-                "resourceId":1,
-                "coverUrl":"xxx/xxx/xxx",
-                "duration":500,
-                "title":"蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球"
-              },
-              {
-                "resourceId":2,
-                "coverUrl":"xxx/xxx/xxx",
-                "duration":600,
-                "title":"幽黯深海"
-              },
-              {
-                "resourceId":2,
-                "coverUrl":"xxx/xxx/xxx",
-                "duration":600,
-                "title":"幽黯深海"
-              }
-            ]
-          },
-          {
-            "type":"物质科学",
-            "resources":[
-              {
-                "resourceId":1,
-                "coverUrl":"xxx/xxx/xxx",
-                "duration":500,
-                "title":"蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球"
-              },
-              {
-                "resourceId":2,
-                "coverUrl":"xxx/xxx/xxx",
-                "duration":600,
-                "title":"幽黯深海"
-              },
-              {
-                "resourceId":1,
-                "coverUrl":"xxx/xxx/xxx",
-                "duration":500,
-                "title":"蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球"
-              },
-              {
-                "resourceId":1,
-                "coverUrl":"xxx/xxx/xxx",
-                "duration":500,
-                "title":"蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球"
-              }
-            ]
-          },
-          {
-            "type":"社会人文",
-            "resources":[
-              {
-                "resourceId":1,
-                "coverUrl":"xxx/xxx/xxx",
-                "duration":500,
-                "title":"蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球蓝色星球"
-              },
-              {
-                "resourceId":2,
-                "coverUrl":"xxx/xxx/xxx",
-                "duration":600,
-                "title":"幽黯深海"
-              }
-            ]
-          }
-        ],
+        // 屏幕宽度
+        screenWidth: document.body.clientWidth,
 
-        // 轮播数据
+        // 推荐视频数据
+        data: [],
+
+        // 轮播相关内容
         carouselValue: 0,
         setting: {
           autoplay: true,
           autoplaySpeed: 5000,
-          height: 520,
+          height: document.body.clientWidth >= 1600 ? 620 : 420,
           dots: 'inside',
           radiusDot: false,
           trigger: 'hover',
           arrow: 'never'
         },
-        carouselData: [
-          {	
-            "title":"地壳的运动",
-            "imageUrl":"http://r1.ykimg.com/051000005AA29523ADC0B0A94801A691",
-            "bgColor": "rgb(7, 36, 57)",
-            "bgUrl": "http://gw.alicdn.com/mt/TB1ITiZonvI8KJjSspjXXcgjXXa-1664-520.png"
-          },
-          {
-            "title":"熊猫的习性",
-            "imageUrl":"http://r1.ykimg.com/051000005AA299D9ADC0AE2A5F0DB77C",
-            "bgColor": "rgb(12, 39, 20)",
-            "bgUrl": "http://gw.alicdn.com/mt/TB13keModnJ8KJjSszdXXaxuFXa-1664-520.png"
-          },
-          {
-            "title":"风筝的制作",
-            "imageUrl":"http://r1.ykimg.com/051000005AA32761ADC0AE3F9B0EAFA7",
-            "bgColor": "rgb(41, 22, 58)",
-            "bgUrl": "http://gw.alicdn.com/mt/TB1A4OaolTH8KJjy0FiXXcRsXXa-1664-520.png"
-          },
-          {
-            "title":"宣传",
-            "imageUrl":"http://r1.ykimg.com/051000005AA299B4ADC0B0B6990C8A9F",
-            "bgColor": "rgb(75, 116, 98)",
-            "bgUrl": "http://gw.alicdn.com/mt/TB1BDiZonvI8KJjSspjXXcgjXXa-1664-520.png"
-          }
-        ]
+        carouselData: []
       }
     },
-    watch: {
-
-    },
-    created: function() {
-
+    computed: {
+      originUrl: function() {
+        // host路径，配置图片的主路径
+        return originUrl === 'http://localhost:7001' ? 'http://videolib.viewshare.net' : originUrl
+      }
     },
     mounted: function() {
-
+      // 确保回到顶部
+      document.documentElement.scrollTop = document.body.scrollTop = 0
+      //绑定屏幕缩放事件
+      window.addEventListener('resize', this._resizeEvent)
+      //获取轮播数据
+      this._getCarouselData()
+      //获取推荐视频资源
+      this._getRecommendData()
+    },
+    destoryed: function() {
+      window.removeEventListener('resize', this._resizeEvent)
     },
     methods: {
       /** 
-       * 点击跳转视频页面
+       * 点击轮播跳转视频页面
+       * @param {String} id: 跳转的参数
       */
-      _detailButtonClick: function() {
-        window.open(window.location.origin + `/#/video-detail?resourceId=1&classId=2`)
+      _detailButtonClick: function(targetUrl) {
+        window.open(window.location.origin + `/#/video-detail?targetUrl=${targetUrl}`)
       },
 
       /** 
@@ -207,7 +112,40 @@
       */
       _startCarouselRun: function() {
         this.setting.autoplay = true
+      },
+
+      /** 
+       * 监听屏幕缩放事件
+      */
+      _resizeEvent: function() {
+        window.screenWidth = document.body.clientWidth
+        this.screenWidth = window.screenWidth
+        this.setting.height = this.screenWidth >= 1600 ? 620 : 420
+      },
+
+      /**
+       * 获取轮播图数据
+      */
+      _getCarouselData: function() {
+        return requestGetCarouselData().then( response => {
+          if (response.code === 0) {
+            this.carouselData = response.data.sliders
+          }
+        })
+      },
+
+      /**
+       * 获取推荐视频资源
+      */
+      _getRecommendData: function() {
+        return requestGetRecommendData().then( response => {
+          // console.log("requestRecommendData",response.data)
+          if (response.code === 0) {
+            this.data = response.data
+          }
+        })
       }
+      
     }
   }
 </script>
@@ -224,4 +162,5 @@
         background-repeat no-repeat
         background-position center top
         background-size auto 100%
+        height 100%
 </style>
